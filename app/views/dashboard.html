@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>User Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
+    />
+    <style>
+      body {
+        padding: 20px;
+        background-color: #f0f0f0;
+      }
+      .table th,
+      .table td {
+        vertical-align: middle;
+      }
+      h1,
+      h2 {
+        color: #007bff;
+      }
+      a {
+        text-decoration: none;
+      }
+      .nav-link {
+        color: white;
+      }
+      .container {
+        background-color: white;
+        padding: 30px;
+        border-radius: 8px;
+      }
+      .nav-item {
+        padding: 0 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Welcome! {{uname}}</h1>
+
+      <div class="mb-5">
+        <ul class="nav nav-pills mb-3">
+          <li class="nav-item">
+            <a
+              class="nav-link bg-primary"
+              href="/transfer?user_id={{ user_id }}"
+              >Transfer Money</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link bg-primary"
+              href="/view-statement?user_id={{ user_id }}"
+              >View Statement</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link bg-primary"
+              href="/messaging?user_id={{ user_id }}"
+              >Messaging/Complaints</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link bg-danger" href="/">Logout</a>
+          </li>
+        </ul>
+      </div>
+
+      {% if role != 'admin' %}
+      <div>
+        <h2>Your Accounts</h2>
+        <table class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Account Type</th>
+              <th>Balance</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for account in accounts %}
+            <tr>
+              <td>{{ account.account_type }}</td>
+              <td>${{ account.balance }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %} {% if role == 'admin' %}
+      <div>
+        <h2>Logs</h2>
+        <table class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in logs %}
+            <tr>
+              <td>{{ log[4] }}</td>
+              <td>{{ log[2] }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <h2>User Messages</h2>
+        <table class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>User ID</th>
+              <th>Message</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for message in messages %}
+            <tr>
+              <td>{{ message[1] }}</td>
+              <td>{{ message[2] | safe }}</td>
+              <td>{{ message[3] }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+    </div>
+  </body>
+</html>

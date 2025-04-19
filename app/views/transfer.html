@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Transfer Money</title>
+  </head>
+  <head>
+    <title>Page Title</title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <style>
+      body {
+        margin: 20px;
+      }
+
+      table {
+        margin: 20px 0;
+      }
+
+      h1,
+      h2 {
+        margin: 20px 0;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: auto;
+      }
+
+      .btn-primary,
+      .btn-success {
+        margin: 5px;
+      }
+
+      .navbar {
+        margin-bottom: 20px;
+      }
+
+      .form-control,
+      .btn {
+        margin: 5px 0;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>Transfer Money</h1>
+      <form action="/transfer" method="post">
+        <input
+          type="number"
+          name="sender_id"
+          placeholder="Sender Account ID"
+          class="form-control"
+          required
+        />
+        <input
+          type="number"
+          name="receiver_id"
+          placeholder="Receiver Account ID"
+          class="form-control"
+          required
+        />
+        <input
+          type="number"
+          step="0.01"
+          name="amount"
+          placeholder="Amount"
+          class="form-control"
+          required
+        />
+        <button type="submit" class="btn btn-success">Transfer</button>
+      </form>
+      <a href="/dashboard?user_id={{user_id}}" class="btn btn-secondary"
+        >Back to Dashboard</a
+      >
+    </div>
+  </body>
+</html>

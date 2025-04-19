@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Messaging & Complaint Upload</title>
+  </head>
+
+  <head>
+    <title>Page Title</title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <style>
+      body {
+        margin: 20px;
+      }
+
+      table {
+        margin: 20px 0;
+      }
+
+      h1,
+      h2 {
+        margin: 20px 0;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: auto;
+      }
+
+      .btn-primary,
+      .btn-success {
+        margin: 5px;
+      }
+
+      .navbar {
+        margin-bottom: 20px;
+      }
+
+      .form-control,
+      .btn {
+        margin: 5px 0;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>Messaging</h1>
+      <form action="/send-message" method="post">
+        <input type="hidden" name="user_id" value="{{user_id}}" />
+        <textarea
+          name="content"
+          placeholder="Enter your message here..."
+          class="form-control"
+          required
+        ></textarea>
+        <button type="submit" class="btn btn-primary">Send Message</button>
+      </form>
+
+      <h1>Upload Complaint</h1>
+      <form
+        action="/upload-complaint"
+        method="post"
+        enctype="multipart/form-data"
+      >
+        <input type="file" name="file" class="form-control-file" required />
+        <button type="submit" class="btn btn-warning">Upload File</button>
+      </form>
+      <a href="/dashboard?user_id={{user_id}}" class="btn btn-secondary"
+        >Back to Dashboard</a
+      >
+    </div>
+  </body>
+</html>

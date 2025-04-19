@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>View Statement</title>
+  </head>
+  <head>
+    <title>Page Title</title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <style>
+      body {
+        margin: 20px;
+      }
+
+      table {
+        margin: 20px 0;
+      }
+
+      h1,
+      h2 {
+        margin: 20px 0;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: auto;
+      }
+
+      .btn-primary,
+      .btn-success {
+        margin: 5px;
+      }
+
+      .navbar {
+        margin-bottom: 20px;
+      }
+
+      .form-control,
+      .btn {
+        margin: 5px 0;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>Transaction Statement</h1>
+      <table class="table table-bordered table-striped">
+        <tr>
+          <th>ID</th>
+          <th>Account ID</th>
+          <th>Amount</th>
+          <th>Recipient ID</th>
+          <th>Description</th>
+          <th>Date</th>
+        </tr>
+        {% for transaction in transactions %}
+        <tr>
+          <td>{{ transaction[0] }}</td>
+          <td>{{ transaction[1] }}</td>
+          <td>{{ transaction[2] }}</td>
+          <td>{{ transaction[3] }}</td>
+          <td>{{ transaction[4] }}</td>
+          <td>{{ transaction[5] }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+      <a href="/dashboard?user_id={{user_id}}" class="btn btn-secondary"
+        >Back to Dashboard</a
+      >
+    </div>
+  </body>
+</html>
