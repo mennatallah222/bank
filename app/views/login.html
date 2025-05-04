@@ -1,64 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8" />
     <title>Login</title>
-  </head>
-  <head>
-    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link
       rel="stylesheet"
       href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
     />
     <style>
       body {
-        margin: 20px;
+        background-color: #f8f9fa;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
       }
 
-      table {
-        margin: 20px 0;
+      .login-card {
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+        width: 100%;
+        max-width: 400px;
       }
 
-      h1,
-      h2 {
-        margin: 20px 0;
+      .login-card h1 {
+        margin-bottom: 25px;
       }
 
-      .container {
-        max-width: 800px;
-        margin: auto;
+      .form-control {
+        margin-bottom: 15px;
       }
 
-      .btn-primary,
-      .btn-success {
-        margin: 5px;
-      }
-
-      .navbar {
-        margin-bottom: 20px;
-      }
-
-      .form-control,
       .btn {
-        margin: 5px 0;
+        width: 100%;
       }
     </style>
   </head>
 
   <body>
-    <div class="container">
-      <h1>Login</h1>
+    <div class="login-card">
+      <h1 class="text-center">Login</h1>
       <form method="post" action="/login">
         <input
           type="text"
           name="username"
           placeholder="Username"
           class="form-control"
+          required
         />
         <input
           type="password"
           name="password"
           placeholder="Password"
           class="form-control"
+          required
         />
         <button type="submit" class="btn btn-primary">Login</button>
       </form>

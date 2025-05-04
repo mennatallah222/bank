@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title>View Statement</title>
-  </head>
-  <head>
-    <title>Page Title</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transaction Statement</title>
     <link
       rel="stylesheet"
       href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
@@ -12,64 +11,73 @@
     <style>
       body {
         margin: 20px;
+        background-color: #f8f9fa;
       }
 
-      table {
+      h1 {
         margin: 20px 0;
-      }
-
-      h1,
-      h2 {
-        margin: 20px 0;
+        color: #007bff;
       }
 
       .container {
-        max-width: 800px;
+        max-width: 900px;
         margin: auto;
+        background-color: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       }
 
-      .btn-primary,
-      .btn-success {
-        margin: 5px;
+      .btn-secondary {
+        margin-top: 20px;
       }
 
-      .navbar {
-        margin-bottom: 20px;
-      }
-
-      .form-control,
-      .btn {
-        margin: 5px 0;
+      table {
+        margin-top: 20px;
       }
     </style>
   </head>
 
   <body>
     <div class="container">
-      <h1>Transaction Statement</h1>
-      <table class="table table-bordered table-striped">
-        <tr>
-          <th>ID</th>
-          <th>Account ID</th>
-          <th>Amount</th>
-          <th>Recipient ID</th>
-          <th>Description</th>
-          <th>Date</th>
-        </tr>
-        {% for transaction in transactions %}
-        <tr>
-          <td>{{ transaction[0] }}</td>
-          <td>{{ transaction[1] }}</td>
-          <td>{{ transaction[2] }}</td>
-          <td>{{ transaction[3] }}</td>
-          <td>{{ transaction[4] }}</td>
-          <td>{{ transaction[5] }}</td>
-        </tr>
-        {% endfor %}
-      </table>
-      <a href="/dashboard?user_id={{user_id}}" class="btn btn-secondary"
-        >Back to Dashboard</a
-      >
+      <h1 class="text-center">Transaction Statement</h1>
+
+      {% if transactions %}
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+          <thead class="thead-dark">
+            <tr>
+              <th>ID</th>
+              <th>Account ID</th>
+              <th>Amount</th>
+              <th>Recipient ID</th>
+              <th>Description</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for transaction in transactions %}
+            <tr>
+              <td>{{ transaction[0] }}</td>
+              <td>{{ transaction[1] }}</td>
+              <td>${{ transaction[2] }}</td>
+              <td>{{ transaction[3] }}</td>
+              <td>{{ transaction[4] }}</td>
+              <td>{{ transaction[5] }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-center text-muted">No transactions found.</p>
+      {% endif %}
+
+      <div class="text-center">
+        <a href="/dashboard?user_id={{ user_id }}" class="btn btn-secondary">
+          Back to Dashboard
+        </a>
+      </div>
     </div>
   </body>
 </html>

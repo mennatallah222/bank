@@ -51,8 +51,11 @@ def post_login( username: str = Form(...), password: str = Form(...), db: Sessio
         response = RedirectResponse(url=f"/dashboard?role={user.role}&user_id={user_id}", status_code=status.HTTP_302_FOUND)
         return response
 
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-
+    return templates.TemplateResponse("response.html", {
+            "title": "Error! Login Failed",
+            "message": "Invalid credintials",
+            "return_url": "/login"
+        })
 
 from fastapi.responses import RedirectResponse
 
@@ -103,22 +106,39 @@ async def upload_complaint(file: UploadFile = File(...)):
     return {"message": "File uploaded successfully!", "filename": file.filename}
 
 
-@router.post("/send-message")
-def send_message(user_id: int = Form(...), content: str = Form(...), db: Session = Depends(get_db)):
+@router.post("/send-message", response_class=HTMLResponse)
+def send_message( request: Request, user_id: int = Form(...), content: str = Form(...), db: Session = Depends(get_db)):
     try:
-        if len(content) > 10000:
-            raise MemoryError("Simulated Buffer Overflow: Content too large!")
-        db.execute(text("INSERT INTO messages (user_id, content) VALUES (:user_id, :content)"),{"user_id": user_id, "content": content})
-        db.commit()
-        return {"message": "Message sent successfully!"}
-    except Exception as e:
         db.execute(
-            text("INSERT INTO logs (user_id, action) VALUES (:user_id, :action)"),
-            {"user_id": user_id, "action": f"System Crash Attempt: {str(e)}"}
+            text("INSERT INTO messages (user_id, content) VALUES (:user_id, :content)"),
+            {"user_id": user_id, "content": content}
         )
         db.commit()
-        raise HTTPException(status_code=500, detail="System Crashed Due To Buffer Overflow")
-
+        return_url = f"/dashboard?user_id={user_id}"
+        
+        return templates.TemplateResponse(
+            "response.html",
+            {
+                "request": request,
+                "title": "Message Sent",
+                "message": "Message sent successfully!",
+                "return_url": return_url,
+                "user_id": user_id
+            }
+        )
+    
+    except Exception as e:
+        db.rollback()
+        return templates.TemplateResponse(
+            "response.html",
+            {
+                "request": request,
+                "title": "Error",
+                "message": f"Failed to send message: {str(e)}",
+                "return_url": f"/dashboard?user_id={user_id}"
+            }
+        )
+    
 
 @router.get("/messaging", response_class=HTMLResponse)
 def get_messaging_page(req: Request, user_id: int):
