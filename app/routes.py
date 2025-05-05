@@ -1,5 +1,6 @@
 import os
 from fastapi import APIRouter, Depends, Form, HTTPException, status
+from markupsafe import Markup
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from fastapi.responses import HTMLResponse
@@ -105,40 +106,38 @@ async def upload_complaint(file: UploadFile = File(...)):
         f.write(await file.read())
     return {"message": "File uploaded successfully!", "filename": file.filename}
 
+@router.get("/dashboard", response_class=HTMLResponse)
+def get_dashboard(req: Request, user_id: int, db: Session = Depends(get_db)):
+    user = db.execute(text("SELECT * FROM users WHERE id = :user_id"), {"user_id": user_id}).fetchone()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-@router.post("/send-message", response_class=HTMLResponse)
-def send_message( request: Request, user_id: int = Form(...), content: str = Form(...), db: Session = Depends(get_db)):
-    try:
-        db.execute(
-            text("INSERT INTO messages (user_id, content) VALUES (:user_id, :content)"),
-            {"user_id": user_id, "content": content}
-        )
-        db.commit()
-        return_url = f"/dashboard?user_id={user_id}"
-        
-        return templates.TemplateResponse(
-            "response.html",
-            {
-                "request": request,
-                "title": "Message Sent",
-                "message": "Message sent successfully!",
-                "return_url": return_url,
-                "user_id": user_id
-            }
-        )
-    
-    except Exception as e:
-        db.rollback()
-        return templates.TemplateResponse(
-            "response.html",
-            {
-                "request": request,
-                "title": "Error",
-                "message": f"Failed to send message: {str(e)}",
-                "return_url": f"/dashboard?user_id={user_id}"
-            }
-        )
-    
+    role = user[3]
+    logs, raw_messages, complaints = [], [], []
+    accounts = db.execute(text("SELECT * FROM accounts WHERE user_id = :user_id"), {"user_id": user_id}).fetchall()
+
+    if role == "admin":
+        logs = db.execute(text("SELECT * FROM logs")).fetchall()
+        raw_messages = db.execute(text("SELECT * FROM messages")).fetchall()
+        complaints = db.execute(text("SELECT * FROM complaints")).fetchall()
+        messages = [
+            (msg[0], msg[1], Markup(msg[2]))
+            for msg in raw_messages
+        ]
+    else:
+        messages = []
+
+    return templates.TemplateResponse("dashboard.html", {
+        "request": req,
+        "user_id": user_id,
+        "uname": user[1],
+        "role": role,
+        "logs": logs,
+        "messages": messages,
+        "complaints": complaints,
+        "accounts": accounts
+    })
+
 
 @router.get("/messaging", response_class=HTMLResponse)
 def get_messaging_page(req: Request, user_id: int):
