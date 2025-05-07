@@ -49,6 +49,10 @@
   <body>
     <div class="container">
       <h1>Welcome, {{ uname }}!</h1>
+      {% if avatar_url %}
+      <img src="{{ avatar_url }}" alt="Profile Picture" width="50" height="50">
+      {% endif %}
+      <a href="/profile?user_id={{ user_id }}">Edit Profile</a>
 
       <ul class="nav nav-pills mb-4">
         <li class="nav-item">

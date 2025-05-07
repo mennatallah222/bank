@@ -59,6 +59,8 @@
           method="post"
           enctype="multipart/form-data"
         >
+          <input type="hidden" name="user_id" value="{{user_id}}" />
+
           <div class="form-group">
             <input type="file" name="file" class="form-control-file" required />
           </div>

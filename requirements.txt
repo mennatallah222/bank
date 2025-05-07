@@ -5,3 +5,5 @@ python-multipart
 sqlalchemy
 asyncpg
 passlib
+requests
+urllib3
