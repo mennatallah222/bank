@@ -49,39 +49,6 @@ def post_register(username: str = Form(...),password: str = Form(...),role: str 
     return response
 
 
-
-@router.post("/update-profile")
-async def update_profile(
-    request: Request,
-    user_id: int = Form(...),
-    avatar_url: str = Form(...),
-    db: Session = Depends(get_db)
-):
-    #SSRF vuln, no validation of user-supplied URL
-    try:
-        response = requests.get(avatar_url, timeout=5)
-        if response.status_code == 200:
-            db.execute(
-                text("UPDATE users SET avatar_url = :url WHERE id = :user_id"),
-                {"url": avatar_url, "user_id": user_id}
-            )
-            db.commit()
-            
-            return templates.TemplateResponse("response.html", {
-                "request": request,
-                "title": "Success!",
-                "message": f"Profile picture updated from {avatar_url}",
-                "return_url": f"/profile?user_id={user_id}"
-            })
-            
-    except Exception as e:
-        return templates.TemplateResponse("response.html", {
-            "request": request,
-            "title": "Error!",
-            "message": f"Failed to fetch image: {str(e)}",
-            "return_url": f"/profile?user_id={user_id}"
-        })
-    
 @router.get("/login", response_class=HTMLResponse)
 def get_login(req: Request):
     return templates.TemplateResponse("login.html", {"request": req})
@@ -134,23 +101,39 @@ def get_dashboard(req: Request, user_id: int, db: Session = Depends(get_db)):
         "complaints": complaints,
         "accounts": accounts
     })
+
+
+
+
+@router.post("/update-profile")
+async def update_profile( request: Request, user_id: int = Form(...), avatar_url: str = Form(...), db: Session = Depends(get_db)):
+    #SSRF vuln, no validation of user-supplied URL
+    try:
+        response = requests.get(avatar_url, timeout=5)
+        if response.status_code == 200:
+            db.execute( text("UPDATE users SET avatar_url = :url WHERE id = :user_id"), {"url": avatar_url, "user_id": user_id})
+            db.commit()
+            return templates.TemplateResponse("response.html", {
+                "request": request,
+                "title": "Success!",
+                "message": f"Profile picture updated from {avatar_url}",
+                "return_url": f"/profile?user_id={user_id}"
+            })
+    except Exception as e:
+        return templates.TemplateResponse("response.html", { "request": request, "title": "Error!", "message": f"Failed to fetch image: {str(e)}", "return_url": f"/profile?user_id={user_id}"})
+
 @router.get("/profile", response_class=HTMLResponse)
 def get_profile(req: Request, user_id: int, db: Session = Depends(get_db)):
-    user = db.execute(
-        text("SELECT id, username, avatar_url FROM users WHERE id = :user_id"),
-        {"user_id": user_id}
-    ).fetchone()
-    
+    user = db.execute(text("SELECT id, username, avatar_url FROM users WHERE id = :user_id"),{"user_id": user_id}).fetchone()
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+        raise HTTPException( status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
         
     return templates.TemplateResponse(
         "profile.html",
         {"request": req, "user": user, "user_id": user_id}
     )
+
+
 @router.get("/view-statement", response_class=HTMLResponse)
 def view_statement(req: Request, user_id: int, db: Session = Depends(get_db)):
     transactions = db.execute(text("SELECT * FROM transactions WHERE account_id = :user_id"), {"user_id": user_id}).fetchall()
@@ -173,38 +156,6 @@ async def upload_complaint(request: Request, user_id: int = Form(...), file: Upl
         "message": "File uploaded successfully!",
         "return_url": f"/messaging?user_id={user_id}",
         "filename": file.filename
-    })
-
-@router.get("/dashboard", response_class=HTMLResponse)
-def get_dashboard(req: Request, user_id: int, db: Session = Depends(get_db)):
-    user = db.execute(text("SELECT * FROM users WHERE id = :user_id"), {"user_id": user_id}).fetchone()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-
-    role = user[3]
-    logs, raw_messages, complaints = [], [], []
-    accounts = db.execute(text("SELECT * FROM accounts WHERE user_id = :user_id"), {"user_id": user_id}).fetchall()
-
-    if role == "admin":
-        logs = db.execute(text("SELECT * FROM logs")).fetchall()
-        raw_messages = db.execute(text("SELECT * FROM messages")).fetchall()
-        complaints = db.execute(text("SELECT * FROM complaints")).fetchall()
-        messages = [
-            (msg[0], msg[1], Markup(msg[2]))
-            for msg in raw_messages
-        ]
-    else:
-        messages = []
-
-    return templates.TemplateResponse("dashboard.html", {
-        "request": req,
-        "user_id": user_id,
-        "uname": user[1],
-        "role": role,
-        "logs": logs,
-        "messages": messages,
-        "complaints": complaints,
-        "accounts": accounts
     })
 
 
