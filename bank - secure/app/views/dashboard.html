@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>User Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
+    />
+    <style>
+      body {
+        padding: 20px;
+        background-color: #f0f0f0;
+      }
+
+      h1,
+      h2 {
+        color: #007bff;
+        margin-bottom: 20px;
+      }
+
+      .nav-link {
+        color: white !important;
+        margin-right: 10px;
+      }
+
+      .container {
+        background-color: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      .nav-pills {
+        flex-wrap: wrap;
+      }
+      .scrollable-section {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 10px;
+        background-color: #ffffff;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Welcome, {{ uname }}!</h1>
+      {% if avatar_url %}
+        <img src="{{ avatar_url }}" alt="Profile Picture" width="50" height="50">
+      {% endif %}
+      <a href="/profile">Edit Profile</a>
+
+
+      <ul class="nav nav-pills mb-4">
+        <li class="nav-item">
+          <a
+            class="nav-link bg-primary text-white"
+            href="/transfer"
+          >
+            Transfer Money
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link bg-primary text-white"
+            href="/view-statement"
+          >
+            View Statement
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link bg-primary text-white"
+            href="/messaging"
+          >
+            Messaging/Complaints
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link bg-danger text-white" href="/logout">Logout</a>
+        </li>
+      </ul>
+
+      {% if role != 'admin' %}
+      <div>
+        <h2>Your Accounts</h2>
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped">
+            <thead>
+              <tr>
+                <th>Account Type</th>
+                <th>Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for account in accounts %}
+              <tr>
+                <td>{{ account.account_type }}</td>
+                <td>${{ account.balance }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %} {% if role == 'admin' %}
+      <hr class="my-4" />
+      <div>
+        <h2>User Logs</h2>
+<div class="scrollable-section mb-4">
+  <table class="table table-bordered table-striped mb-0">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Action</th>
+        <th>Timestamp</th>
+        <th>User Name</th>
+        <th>STATUS</th>
+        <th>IP</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for log in logs %}
+      <tr>
+        <td>{{ log[1] }}</td>
+        <td>{{ log[2] }}</td>
+        <td>{{ log[3] }}</td>
+        <td>{{ log[4] }}</td>
+        <td>{{ log[5] }}</td>
+        <td>{{ log[6] }}</td>
+        <td>{{ log[7] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<h2>User Messages</h2>
+<div class="scrollable-section">
+  <table class="table table-bordered table-striped mb-0">
+    <thead>
+      <tr>
+        <th>User ID</th>
+        <th>Message</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for message in messages %}
+      <tr>
+        <td>{{ message[1] }}</td>
+        <td>{{ message[2] }}</td>
+        <td>{{ message[3] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+      {% endif %}
+    </div>
+  </body>
+</html>

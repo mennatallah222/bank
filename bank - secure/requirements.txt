@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+jinja2
+python-multipart
+sqlalchemy
+asyncpg
+passlib
+python-magic
+itsdangerous
+python-dotenv
+bcrypt
+python-jose

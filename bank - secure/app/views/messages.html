@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Messaging & Complaint Upload</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <style>
+      body {
+        background-color: #f8f9fa;
+        padding: 40px 15px;
+      }
+
+      .card {
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+      }
+
+      h2 {
+        margin-bottom: 20px;
+      }
+
+      .btn {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <!-- Messaging Section -->
+      <div class="card">
+        <h2>Send a Message</h2>
+        <form action="/send-message" method="post">
+          <input type="hidden" name="user_id" value="{{user_id}}" />
+          <div class="form-group">
+            <textarea
+              name="content"
+              rows="4"
+              class="form-control"
+              placeholder="Enter your message here..."
+              required
+            ></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Send Message</button>
+        </form>
+      </div>
+
+      <!-- Complaint Upload Section -->
+      <div class="card">
+        <h2>Upload a Complaint</h2>
+
+        <form
+          action="/upload-complaint"
+          method="post"
+          enctype="multipart/form-data"
+        >
+          <input type="hidden" name="user_id" value="{{user_id}}" />
+          <div class="form-group">
+            <input type="file" name="file" class="form-control-file" required />
+          </div>
+          <button type="submit" class="btn btn-warning text-white">
+            Upload Complaint
+          </button>
+        </form>
+      </div>
+
+      <a href="/dashboard" class="btn btn-secondary"> Back to Dashboard </a>
+    </div>
+  </body>
+</html>

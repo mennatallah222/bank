@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import os
 from fastapi import APIRouter, Depends, Form, HTTPException, status
 from markupsafe import Markup
@@ -7,15 +8,23 @@ from fastapi.responses import HTMLResponse
 from app.database import get_db
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
-from jinja2 import Template  #outdated Jinja2 version
 import requests
 from urllib.parse import urlparse
+from passlib.context import CryptContext
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from fastapi.responses import RedirectResponse
+from fastapi import File, UploadFile
+
 
 router = APIRouter()
+
+limiter = Limiter(key_func=get_remote_address)
+pwd_context=CryptContext(schemes=["bcrypt"], deprecated="auto")
 templates = Jinja2Templates(directory="app/views")
 
-#hardcoded credentials (A07: Identification and Authentication Failures)
-ADMIN_CREDENTIALS = {"username": "admin 1", "password": "aaa"}
+# #hardcoded credentials (A07: Identification and Authentication Failures)
+# ADMIN_CREDENTIALS = {"username": "admin 1", "password": "aaa"}
 
 @router.get("/", response_class=HTMLResponse)
 async def read_root(req: Request):
@@ -53,26 +62,69 @@ def post_register(username: str = Form(...),password: str = Form(...),role: str 
 def get_login(req: Request):
     return templates.TemplateResponse("login.html", {"request": req})
 
+
+ADMIN_USERNAME1 = "admin 1"
+ADMIN_PASS1 ="aaa"
+
 @router.post("/login")
-def post_login( username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
-    user = db.execute(text(f"SELECT * FROM users WHERE username = '{username}' ")).fetchone()
+@limiter.limit("5/minute") #5 attempts per minute
+def post_login(request: Request, username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
+    user = db.execute(text("SELECT * FROM users WHERE username = :username"),{"username": username}).fetchone()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Invalid credentials")
+    
+    if (username == ADMIN_USERNAME1 and password == ADMIN_PASS1):
+        return RedirectResponse(
+        url=f"/dashboard?role={user.role}&user_id={user.id}",
+        status_code=status.HTTP_302_FOUND
+    )
+    if user.locked_until and user.locked_until > datetime.now():
+        remaining = (user.locked_until - datetime.now()).seconds
+        return templates.TemplateResponse("response.html", {
+                "request": request,
+                "title": "Error!",
+                "message": f"Account locked. Try again in {remaining} seconds",
+                "return_url": "/"
+            })
+    if not pwd_context.verify(password, user.password):
+        db.execute(text("""UPDATE users SET failed_attempts = failed_attempts + 1 WHERE username = :username"""),{"username": username})
+        if user.failed_attempts + 1 >= 5: #lock the account after 5 failed attempts
+            db.execute(
+                text("""UPDATE users SET locked_until = :lock_time WHERE username = :username"""),{ "username": username, "lock_time": datetime.now() + timedelta(minutes=15)})
+            db.execute(
+                text("""INSERT INTO logs (username, action, ip_address, user_agent) VALUES (:username, :action, :ip_address, :user_agent)"""),
+                {
+                    "username": username,
+                    "action": "Failed login attempt",
+                    "ip_address": request.client.host,
+                    "user_agent": request.headers.get("user-agent", "unknown")
+                }
+            )
 
-    if user:
-        user_id=user[0]
-        username = user[1]
-        #minimal logging that doesn't capture important details
-        db.execute(text("INSERT INTO logs (action) VALUES ('User logged in')"))
         db.commit()
-        response = RedirectResponse(url=f"/dashboard?role={user.role}&user_id={user_id}", status_code=status.HTTP_302_FOUND)
-        return response
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Invalid credentials")
 
-    return templates.TemplateResponse("response.html", {
-            "title": "Error! Login Failed",
-            "message": "Invalid credintials",
-            "return_url": "/login"
-        })
+    #reset the count of failed attempts on successful login
+    db.execute(text("""UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE username = :username"""),{"username": username})
+    ip_address = request.client.host
+    user_agent = request.headers.get("user-agent", "unknown")
 
-from fastapi.responses import RedirectResponse
+    db.execute(
+        text("""INSERT INTO logs (username, action, ip_address, user_agent) VALUES (:username, :action, :ip_address, :user_agent)"""),
+        {
+            "username": username,
+            "action": "User logged in",
+            "ip_address": ip_address,
+            "user_agent": user_agent
+        }
+    )
+
+    db.commit()
+    return RedirectResponse(
+        url=f"/dashboard?role={user.role}&user_id={user.id}",
+        status_code=status.HTTP_302_FOUND
+    )
+
 
 
 @router.get("/dashboard", response_class=HTMLResponse)
@@ -141,7 +193,6 @@ def view_statement(req: Request, user_id: int, db: Session = Depends(get_db)):
     return templates.TemplateResponse("statement.html", {"request": req, "user_id":user_id, "transactions": transactions})
 
 
-from fastapi import File, UploadFile
 
 @router.post("/upload-complaint")
 async def upload_complaint(request: Request, user_id: int = Form(...), file: UploadFile = File(...)):

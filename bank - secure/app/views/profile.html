@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>User Profile</title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <div class="container mt-5">
+      <h1>Update Profile Picture</h1>
+      <form method="post" action="/update-profile">
+        <input type="hidden" name="user_id" value="{{ user_id }}" />
+        <div class="form-group">
+          <label for="avatar_url">Avatar URL:</label>
+          <input
+            type="text"
+            class="form-control"
+            name="avatar_url"
+            value="{{ user.avatar_url if user.avatar_url else '' }}"
+            required
+          />
+          <small class="form-text text-muted">
+            Enter the URL of your profile picture
+          </small>
+        </div>
+        <button type="submit" class="btn btn-primary">Update Profile</button>
+      </form>
+
+      {% if user.avatar_url %}
+      <div class="mt-4">
+        <h3>Current Avatar:</h3>
+        <img
+          src="{{ user.avatar_url }}"
+          alt="Profile Picture"
+          class="img-thumbnail"
+          width="200"
+        />
+      </div>
+      {% endif %}
+      <div class="d-flex justify-content-center mt-3">
+        <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+      </div>
+    </div>
+  </body>
+</html>
